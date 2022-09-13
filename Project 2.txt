@@ -1,0 +1,109 @@
+---COVID-19 Tableau Data Visualization---
+
+
+1---To estimate the incidence of COVID-19 in different continents per year--
+
+SELECT 
+continent, year, SUM(population) as Population,SUM(total_cases) as Total_Cases,  (SUM(total_cases)/SUM(population))*100 as Incidence
+FROM
+covid_data_deaths
+WHERE
+continent IS NOT NULL
+GROUP BY 
+continent,year
+ORDER BY
+continent
+
+
+2---To get a sense of the lethality of the virus across continents per year---
+
+SELECT
+continent, year, SUM(total_cases) as Total_Cases,SUM(total_deaths) as Total_Deaths, (SUM(total_deaths)/SUM(total_cases))*100 as Lethality
+FROM
+covid_data_deaths
+WHERE
+continent IS NOT NULL
+GROUP BY 
+continent,year
+ORDER BY
+continent
+
+
+3---Seeking probable correlation between Full Vaccination and impact on the number of COVID-19 cases and deaths---
+
+SELECT
+dea.continent as Continent,dea.year as Year, 
+SUM(dea.population) as Population,
+SUM(vac.people_fully_vaccinated) as Total_People_fully_Vac, 
+SUM(dea.total_cases) as Total_Cases,
+SUM(dea.total_deaths) as Total_Deaths
+FROM
+covid_data_vaccination vac 
+JOIN
+covid_data_deaths dea 
+ON
+dea.population = vac.population
+AND dea.continent=vac.continent
+WHERE
+dea.continent IS NOT NULL
+and vac.date between "2021-02-28" and "2022-06-02" 
+GROUP BY 
+dea.continent,dea.year
+ORDER BY
+dea.continent
+
+4---Calculating COVID-19 Vaccination Coverage across continents by year --
+
+SELECT 
+dea.continent,dea.year, SUM(dea.population) as Population,(SUM(vac.total_vaccinations)/SUM(dea.population))*100 as Vaccination_Coverage
+FROM
+covid_data_vaccination vac 
+JOIN
+covid_data_deaths dea 
+ON
+dea.continent = vac.continent
+	and dea.population = vac.population
+WHERE
+dea.continent IS NOT NULL 
+GROUP BY 
+dea.continent,dea.year
+ORDER BY
+continent
+
+5---Total Deaths by COVID between 02/24/2020 and 02/06/2022---
+
+SELECT
+ SUM(total_deaths) as Total_deaths
+FROM
+covid_data_deaths
+
+
+6---Total people infected by COVID between 02/24/2020 and 02/06/2022---
+
+SELECT
+ SUM(total_cases) as Total_people_infected
+FROM
+covid_data_deaths
+
+
+7---Total people vaccined against COVID between 02/24/2020 and 02/06/2022
+
+SELECT
+ SUM(people_vaccinated) as Total_people_vaccinated
+FROM
+covid_data_vaccination
+
+
+8---To estimate the locations with the Highest Infection and The incidence of COVID-19 in different locations--
+
+SELECT 
+location, continent,population, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as Incidence
+FROM
+covid_data_deaths
+WHERE
+continent IS NOT NULL 
+AND location NOT IN ('World', 'European Union', 'International')
+GROUP BY
+location, population
+ORDER BY 
+Incidence DESC
